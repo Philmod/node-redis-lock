@@ -1,16 +1,8 @@
-MOCHA_OPTS=
-REPORTER = dot
-
 test:
-	@NODE_ENV=test ./node_modules/.bin/mocha \
-		--reporter $(REPORTER) \
-		$(MOCHA_OPTS)
-
-test-w:
-  @NODE_ENV=test ./node_modules/.bin/mocha \
-    --reporter $(REPORTER) \
+	@./node_modules/.bin/mocha \
+    --reporter list \
+    --timeout 5000 \
     --growl \
-    --watch \
-    $(MOCHA_OPTS)
+    --reporter spec \
 
-.PHONY: test test-w
+.PHONY: test
