@@ -38,9 +38,7 @@ lock.release(key, function(e, r) {
 
 ## Tests
 
-```js
-npm test
-```
+      $ npm test
 
 ## Author
 
