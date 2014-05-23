@@ -31,5 +31,8 @@
     "type": "git",
     "url": "git@github.com:Philmod/node-redis-lock.git"
   },
-  "license": "BSD"
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Philmod/node-redis-lock/issues"
+  }
 }
