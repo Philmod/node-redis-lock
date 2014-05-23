@@ -1,0 +1,32 @@
+{
+  "name": "node-redis-lock",
+  "version": "0.0.1",
+  "description": "Node.js Redis locking tool.",
+  "keywords": [
+    "redis",
+    "lock",
+    "locking"
+  ],
+  "author": "Philmod <pmodard@livefyre.com>",
+  "homepage": "https://github.com/Philmod/node-redis-lock.git",
+  "engines": {
+    "node": ">= v0.8.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "should": "",
+    "mocha": ""
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "main": "index",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Philmod/node-redis-lock.git"
+  },
+  "license": "BSD"
+}
