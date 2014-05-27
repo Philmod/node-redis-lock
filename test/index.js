@@ -312,4 +312,42 @@ describe('Lock', function() {
 
   });
 
+describe('#isLock()', function() {
+
+    var lock;
+
+    beforeEach(function(done) {
+      clearRedis(done);
+    });
+
+    beforeEach(function() {
+      lock = new Lock();
+    });
+
+    afterEach(function() {
+      lock.quit();
+    });
+
+    it('successfully check that a lock doesn\'t exist', function(done) {
+      lock.isLock(key1, function(e, res) {
+        should.not.exist(e);
+        should.not.exist(res);
+        done();
+
+      });
+    });
+
+    it('successfully check that a lock exists', function(done) {
+      lock.acquire(key1, 2, value1, function(e, res) {
+        lock.isLock(key1, function(e, res) {
+          should.not.exist(e);
+          res.should.equal(value1);
+          done();
+        });
+      });
+    });
+
+
+  });
+
 });
