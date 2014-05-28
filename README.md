@@ -34,6 +34,11 @@ lock.renew(key, ttl, value, function(e, r) {
 lock.release(key, function(e, r) {
   // 
 });
+
+// Does a lock exist?
+lock.isLocked(key, function(e, r) {
+  // Lock if r exists (this is the value of the lock)
+});
 ```
 
 ## Tests

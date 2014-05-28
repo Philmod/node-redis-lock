@@ -312,7 +312,7 @@ describe('Lock', function() {
 
   });
 
-describe('#isLock()', function() {
+describe('#isLocked()', function() {
 
     var lock;
 
@@ -329,7 +329,7 @@ describe('#isLock()', function() {
     });
 
     it('successfully check that a lock doesn\'t exist', function(done) {
-      lock.isLock(key1, function(e, res) {
+      lock.isLocked(key1, function(e, res) {
         should.not.exist(e);
         should.not.exist(res);
         done();
@@ -339,7 +339,7 @@ describe('#isLock()', function() {
 
     it('successfully check that a lock exists', function(done) {
       lock.acquire(key1, 2, value1, function(e, res) {
-        lock.isLock(key1, function(e, res) {
+        lock.isLocked(key1, function(e, res) {
           should.not.exist(e);
           res.should.equal(value1);
           done();
