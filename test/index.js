@@ -298,7 +298,7 @@ describe('Lock', function() {
             checkTtl: function(cb) {
               redisClient.ttl(key1, function(e, res) {
                 should.not.exist(e);
-                res.should.equal(-1);
+                res.should.below(0);
                 cb(e);
               });
             }
