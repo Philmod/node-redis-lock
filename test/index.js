@@ -125,6 +125,32 @@ describe('Lock', function() {
       });
     });
 
+    it('successfully acquires a new lock without passing a value', function(done) {
+      lock.acquire(key1, 1, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        // Check Redis.
+        async.parallel({
+          checkValue: function(cb) {
+            redisClient.get(key1, function(e, res) {
+              should.not.exist(e);
+              res.should.equal(lock.value);
+              cb(e);
+            });
+          },
+          checkTtl: function(cb) {
+            redisClient.ttl(key1, function(e, res) {
+              should.not.exist(e);
+              res.should.equal(1);
+              cb(e);
+            });
+          }
+        }, done);
+
+      });
+    });
+
     it('successfully acquires a new lock with namespace', function(done) {
       lock = new Lock({namespace: namespace});
       lock.acquire(key1, 1, value1, function(e, res) {
@@ -196,6 +222,22 @@ describe('Lock', function() {
       });
     });
 
+    it('fails acquiring a locked key without a value', function(done) {
+      var lock2 = new Lock();
+
+      lock.acquire(key1, 1, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        lock2.acquire(key1, 1, function(e, res) {
+          should.exist(e);
+          lock2.quit();
+          done();
+        });
+
+      });
+    });
+
   });
 
   describe('#renew()', function() {
@@ -246,6 +288,38 @@ describe('Lock', function() {
       });
     });
 
+    it('successfully renew a new lock without a value', function(done) {
+      lock.acquire(key1, 2, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        lock.renew(key1, 10, function(e, res) {
+          should.not.exist(e);
+          res.should.be.true;
+
+          // Check Redis.
+          async.parallel({
+            checkValue: function(cb) {
+              redisClient.get(key1, function(e, res) {
+                should.not.exist(e);
+                res.should.equal(lock.value);
+                cb(e);
+              });
+            },
+            checkTtl: function(cb) {
+              redisClient.ttl(key1, function(e, res) {
+                should.not.exist(e);
+                res.should.equal(10);
+                cb(e);
+              });
+            }
+          }, done);
+
+        });
+
+      });
+    });
+
     it('fails renewing a lock with a different value', function(done) {
       lock.acquire(key1, 2, value1, function(e, res) {
         should.not.exist(e);
@@ -276,19 +350,6 @@ describe('Lock', function() {
 
     afterEach(function() {
       lock.quit();
-    });
-
-    it('fails releasing a lock without a value', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
-        should.not.exist(e);
-        res.should.be.true;
-
-        lock.release(key1, function(e, res) {
-          should.exist(e);
-          done();
-        });
-
-      });
     });
 
     it('fails releasing a lock without the good value', function(done) {
@@ -330,6 +391,19 @@ describe('Lock', function() {
             }
           }, done);
 
+        });
+
+      });
+    });
+
+    it('successfully release a lock without a value', function(done) {
+      lock.acquire(key1, 2, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        lock.release(key1, function(e, res) {
+          should.not.exist(e);
+          done();
         });
 
       });
