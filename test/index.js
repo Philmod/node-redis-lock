@@ -278,12 +278,38 @@ describe('Lock', function() {
       lock.quit();
     });
 
-    it('successfully release a lock', function(done) {
+    it('fails releasing a lock without a value', function(done) {
       lock.acquire(key1, 2, value1, function(e, res) {
         should.not.exist(e);
         res.should.be.true;
 
         lock.release(key1, function(e, res) {
+          should.exist(e);
+          done();
+        });
+
+      });
+    });
+
+    it('fails releasing a lock without the good value', function(done) {
+      lock.acquire(key1, 2, value1, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        lock.release(key1, 'whatever', function(e, res) {
+          should.exist(e);
+          done();
+        });
+
+      });
+    });
+
+    it('successfully release a lock', function(done) {
+      lock.acquire(key1, 2, value1, function(e, res) {
+        should.not.exist(e);
+        res.should.be.true;
+
+        lock.release(key1, value1, function(e, res) {
           should.not.exist(e);
 
           // Check Redis.
