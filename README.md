@@ -31,7 +31,8 @@ lock.renew(key, ttl, value, function(e, r) {
 });
 
 // Release a lock.
-lock.release(key, function(e, r) {
+//  The value has to be passed to ensure another host doesn't release it.
+lock.release(key, value, function(e, r) {
   // 
 });
 
