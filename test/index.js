@@ -1,69 +1,68 @@
+"use strict";
+
 /**
  * Module dependencies.
  */
-
-var Lock   = require('../')
-  , redis  = require('redis')
-  , redisClient = redis.createClient()
-  , should = require('should')
-  , assert = require('assert')
-  , async  = require('async')
-  ;
+const Lock = require('../');
+const redis = require('redis');
+const redisClient = redis.createClient();
+const should = require('should');
+const assert = require('assert');
+const async = require('async');
 
 /**
  * Variables.
  */
-var key1 = 'job1'
-  , value1 = 'host1'
-  , key2 = 'job2'
-  , value2 = 'host2'
-  , namespace = 'superworkers'
-  ;
+const key1 = 'job1';
+const value1 = 'host1';
+const key2 = 'job2';
+const value2 = 'host2';
+const namespace = 'superworkers';
 
 /**
  * Clear Redis.
  */
-var clearRedis = function(callback) {
+const clearRedis = (callback) => {
   async.parallel([
-    function(cb) { // Remove everything under the namespace
-      redisClient.keys(namespace + '*', function(e, keys) {
+    (cb) => { // Remove everything under the namespace
+      redisClient.keys(namespace + '*', (e, keys) => {
         if (e) return cb(e);
-        async.each(keys, function(key, cbeach) {
+        async.each(keys, (key, cbeach) => {
           redisClient.del(key,cbeach);
         }, cb);
       });
     },
-    function(cb) { // Remove key1
+    (cb) => { // Remove key1
       redisClient.del(key1, cb);
     },
-    function(cb) { // Remove key2
+    (cb) => { // Remove key2
       redisClient.del(key2, cb);
     },
   ], callback);
-  
+
 };
 
 /**
  * Tests
  */
-describe('Lock', function() {
+describe('Lock', () => {
 
-  describe('Connect to Redis', function() {
+  describe('Connect to Redis', () => {
 
-    var lock;
+    let lock;
 
-    afterEach(function() {
+    afterEach(() => {
       lock.quit();
     });
 
-    it('shoud connect to local Redis', function(done) {
+    it('shoud connect to local Redis', (done) => {
       lock = new Lock();
       lock.should.have.property('client');
       lock.client.should.have.property('stream');
       done();
     });
 
-    it('shoud connect to Redis defined by host/port', function(done) {
+    it('shoud connect to Redis defined by host/port', (done) => {
       lock = new Lock({
           port: 6379
         , host: 'localhost'
@@ -73,8 +72,8 @@ describe('Lock', function() {
       done();
     });
 
-    it('shoud connect to a passed Redis', function(done) {
-      var client = new redis.createClient();
+    it('shoud connect to a passed Redis', (done) => {
+      const client = new redis.createClient();
       lock = new Lock({}, client);
       lock.should.have.property('client');
       lock.client.should.have.property('stream');
@@ -83,38 +82,38 @@ describe('Lock', function() {
 
   });
 
-  describe('#acquire()', function() {
+  describe('#acquire()', () => {
 
-    var lock;
+    let lock;
 
-    beforeEach(function(done) {
+    beforeEach((done) => {
       clearRedis(done);
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       lock = new Lock();
     });
 
-    afterEach(function() {
+    afterEach(() => {
       lock.quit();
     });
 
-    it('successfully acquires a new lock', function(done) {
-      lock.acquire(key1, 1, value1, function(e, res) {
+    it('successfully acquires a new lock', (done) => {
+      lock.acquire(key1, 1, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
         // Check Redis.
         async.parallel({
-          checkValue: function(cb) {
-            redisClient.get(key1, function(e, res) {
+          checkValue: (cb) => {
+            redisClient.get(key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(value1);
               cb(e);
             });
           },
-          checkTtl: function(cb) {
-            redisClient.ttl(key1, function(e, res) {
+          checkTtl: (cb) => {
+            redisClient.ttl(key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(1);
               cb(e);
@@ -125,22 +124,22 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully acquires a new lock without passing a value', function(done) {
-      lock.acquire(key1, 1, function(e, res) {
+    it('successfully acquires a new lock without passing a value', (done) => {
+      lock.acquire(key1, 1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
         // Check Redis.
         async.parallel({
-          checkValue: function(cb) {
-            redisClient.get(key1, function(e, res) {
+          checkValue: (cb) => {
+            redisClient.get(key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(lock.value);
               cb(e);
             });
           },
-          checkTtl: function(cb) {
-            redisClient.ttl(key1, function(e, res) {
+          checkTtl: (cb) => {
+            redisClient.ttl(key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(1);
               cb(e);
@@ -151,23 +150,23 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully acquires a new lock with namespace', function(done) {
+    it('successfully acquires a new lock with namespace', (done) => {
       lock = new Lock({namespace: namespace});
-      lock.acquire(key1, 1, value1, function(e, res) {
+      lock.acquire(key1, 1, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
         // Check Redis.
         async.parallel({
-          checkValue: function(cb) {
-            redisClient.get(namespace + ':' + key1, function(e, res) {
+          checkValue: (cb) => {
+            redisClient.get(namespace + ':' + key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(value1);
               cb(e);
             });
           },
-          checkTtl: function(cb) {
-            redisClient.ttl(namespace + ':' + key1, function(e, res) {
+          checkTtl: (cb) => {
+            redisClient.ttl(namespace + ':' + key1, (e, res) => {
               should.not.exist(e);
               res.should.equal(1);
               cb(e);
@@ -178,12 +177,12 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully acquires 2 new locks', function(done) {
-      lock.acquire(key1, 1, value1, function(e, res) {
+    it('successfully acquires 2 new locks', (done) => {
+      lock.acquire(key1, 1, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.acquire(key2, 1, value2, function(e, res) {
+        lock.acquire(key2, 1, value2, (e, res) => {
           should.not.exist(e);
           res.should.be.true;
 
@@ -192,12 +191,12 @@ describe('Lock', function() {
       });
     });
 
-    it('fails acquiring a lock key', function(done) {
-      lock.acquire(key1, 1, value1, function(e, res) {
+    it('fails acquiring a lock key', (done) => {
+      lock.acquire(key1, 1, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.acquire(key1, 1, value2, function(e, res) {
+        lock.acquire(key1, 1, value2, (e, res) => {
           should.exist(e);
           done();
         });
@@ -205,31 +204,31 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully acquires a new lock and release it after ttl', function(done) {
-      var ttl = 1;
-      lock.acquire(1, ttl, value1, function(e, res) {
+    it('successfully acquires a new lock and release it after ttl', (done) => {
+      const ttl = 1;
+      lock.acquire(1, ttl, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        setTimeout(function() {
-          redisClient.get(key1, function(e, res) {
+        setTimeout(() => {
+          redisClient.get(key1, (e, res) => {
             should.not.exist(e);
             should.not.exist(res);
             done();
           });
         }, 1500);
-        
+
       });
     });
 
-    it('fails acquiring a locked key without a value', function(done) {
-      var lock2 = new Lock();
+    it('fails acquiring a locked key without a value', (done) => {
+      const lock2 = new Lock();
 
-      lock.acquire(key1, 1, function(e, res) {
+      lock.acquire(key1, 1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock2.acquire(key1, 1, function(e, res) {
+        lock2.acquire(key1, 1, (e, res) => {
           should.exist(e);
           lock2.quit();
           done();
@@ -240,42 +239,42 @@ describe('Lock', function() {
 
   });
 
-  describe('#renew()', function() {
+  describe('#renew()', () => {
 
-    var lock;
+    let lock;
 
-    beforeEach(function(done) {
+    beforeEach((done) => {
       clearRedis(done);
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       lock = new Lock();
     });
 
-    afterEach(function() {
+    afterEach(() => {
       lock.quit();
     });
 
-    it('successfully renew a new lock', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
+    it('successfully renew a new lock', (done) => {
+      lock.acquire(key1, 2, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.renew(key1, 10, value1, function(e, res) {
+        lock.renew(key1, 10, value1, (e, res) => {
           should.not.exist(e);
           res.should.be.true;
 
           // Check Redis.
           async.parallel({
-            checkValue: function(cb) {
-              redisClient.get(key1, function(e, res) {
+            checkValue: (cb) => {
+              redisClient.get(key1, (e, res) => {
                 should.not.exist(e);
                 res.should.equal(value1);
                 cb(e);
               });
             },
-            checkTtl: function(cb) {
-              redisClient.ttl(key1, function(e, res) {
+            checkTtl: (cb) => {
+              redisClient.ttl(key1, (e, res) => {
                 should.not.exist(e);
                 res.should.equal(10);
                 cb(e);
@@ -288,26 +287,26 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully renew a new lock without a value', function(done) {
-      lock.acquire(key1, 2, function(e, res) {
+    it('successfully renew a new lock without a value', (done) => {
+      lock.acquire(key1, 2, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.renew(key1, 10, function(e, res) {
+        lock.renew(key1, 10, (e, res) => {
           should.not.exist(e);
           res.should.be.true;
 
           // Check Redis.
           async.parallel({
-            checkValue: function(cb) {
-              redisClient.get(key1, function(e, res) {
+            checkValue: (cb) => {
+              redisClient.get(key1, (e, res) => {
                 should.not.exist(e);
                 res.should.equal(lock.value);
                 cb(e);
               });
             },
-            checkTtl: function(cb) {
-              redisClient.ttl(key1, function(e, res) {
+            checkTtl: (cb) => {
+              redisClient.ttl(key1, (e, res) => {
                 should.not.exist(e);
                 res.should.equal(10);
                 cb(e);
@@ -320,14 +319,14 @@ describe('Lock', function() {
       });
     });
 
-    it('fails renewing a lock with a different value', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
+    it('fails renewing a lock with a different value', (done) => {
+      lock.acquire(key1, 2, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.renew(key1, 10, value2, function(e, res) {
+        lock.renew(key1, 10, value2, (e, res) => {
           should.exist(e);
-          
+
           done();
         });
 
@@ -336,28 +335,28 @@ describe('Lock', function() {
 
   });
 
-  describe('#release()', function() {
+  describe('#release()', () => {
 
-    var lock;
+    let lock;
 
-    beforeEach(function(done) {
+    beforeEach((done) => {
       clearRedis(done);
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       lock = new Lock();
     });
 
-    afterEach(function() {
+    afterEach(() => {
       lock.quit();
     });
 
-    it('fails releasing a lock without the good value', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
+    it('fails releasing a lock without the good value', (done) => {
+      lock.acquire(key1, 2, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.release(key1, 'whatever', function(e, res) {
+        lock.release(key1, 'whatever', (e, res) => {
           should.exist(e);
           done();
         });
@@ -365,25 +364,25 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully release a lock', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
+    it('successfully release a lock', (done) => {
+      lock.acquire(key1, 2, value1, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.release(key1, value1, function(e, res) {
+        lock.release(key1, value1, (e, res) => {
           should.not.exist(e);
 
           // Check Redis.
           async.parallel({
-            checkValue: function(cb) {
-              redisClient.get(key1, function(e, res) {
+            checkValue: (cb) => {
+              redisClient.get(key1, (e, res) => {
                 should.not.exist(e);
                 should.not.exist(res);
                 cb(e);
               });
             },
-            checkTtl: function(cb) {
-              redisClient.ttl(key1, function(e, res) {
+            checkTtl: (cb) => {
+              redisClient.ttl(key1, (e, res) => {
                 should.not.exist(e);
                 res.should.below(0);
                 cb(e);
@@ -396,12 +395,12 @@ describe('Lock', function() {
       });
     });
 
-    it('successfully release a lock without a value', function(done) {
-      lock.acquire(key1, 2, function(e, res) {
+    it('successfully release a lock without a value', (done) => {
+      lock.acquire(key1, 2, (e, res) => {
         should.not.exist(e);
         res.should.be.true;
 
-        lock.release(key1, function(e, res) {
+        lock.release(key1, (e, res) => {
           should.not.exist(e);
           done();
         });
@@ -412,24 +411,24 @@ describe('Lock', function() {
 
   });
 
-describe('#isLocked()', function() {
+describe('#isLocked()', () => {
 
-    var lock;
+    let lock;
 
-    beforeEach(function(done) {
+    beforeEach((done) => {
       clearRedis(done);
     });
 
-    beforeEach(function() {
+    beforeEach(() => {
       lock = new Lock();
     });
 
-    afterEach(function() {
+    afterEach(() => {
       lock.quit();
     });
 
-    it('successfully check that a lock doesn\'t exist', function(done) {
-      lock.isLocked(key1, function(e, res) {
+    it('successfully check that a lock doesn\'t exist', (done) => {
+      lock.isLocked(key1, (e, res) => {
         should.not.exist(e);
         should.not.exist(res);
         done();
@@ -437,9 +436,9 @@ describe('#isLocked()', function() {
       });
     });
 
-    it('successfully check that a lock exists', function(done) {
-      lock.acquire(key1, 2, value1, function(e, res) {
-        lock.isLocked(key1, function(e, res) {
+    it('successfully check that a lock exists', (done) => {
+      lock.acquire(key1, 2, value1, (e, res) => {
+        lock.isLocked(key1, (e, res) => {
           should.not.exist(e);
           res.should.equal(value1);
           done();
